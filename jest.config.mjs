@@ -26,7 +26,7 @@ export default {
         'public'
       ],
       testMatch: [
-        '**/test/**/server/**/*.spec.js'
+        '**/server/**/*.spec.js'
       ]
     },
     {
@@ -38,7 +38,7 @@ export default {
         'server'
       ],
       testMatch: [
-        '**/test/**/public/**/*.spec.js'
+        '**/public/**/*.spec.js'
       ]
     },
   ]

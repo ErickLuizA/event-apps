@@ -1,8 +1,8 @@
 import { describe, expect, jest, test } from '@jest/globals'
-import config from '../../../server/config.js'
-import { Controller } from '../../../server/controller.js'
-import { handler } from '../../../server/routes.js'
-import TestUtil from '../../utils/index.js'
+import TestUtil from '../../test/utils.js'
+import { Controller } from '../controllers/index.js'
+import config from '../utils/config.js'
+import { handler } from './index.js'
 
 const { pages, location, constants: { CONTENT_TYPE } } = config
 

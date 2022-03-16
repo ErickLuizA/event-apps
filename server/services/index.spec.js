@@ -2,9 +2,9 @@ import { describe, expect, jest, test } from '@jest/globals'
 import fs from 'fs'
 import fsPromises from 'fs/promises'
 import { join } from 'path'
-import config from '../../../server/config.js'
-import { Service } from '../../../server/service.js'
-import TestUtil from '../../utils/index.js'
+import TestUtil from '../../test/utils.js'
+import config from '../utils/config.js'
+import { Service } from './index.js'
 
 const { dir: { publicDirectory } } = config
 

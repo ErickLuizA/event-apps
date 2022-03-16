@@ -1,4 +1,4 @@
-import { Service } from './service.js'
+import { Service } from '../services/index.js'
 
 export class Controller {
   constructor() {

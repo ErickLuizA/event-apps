@@ -1,7 +1,7 @@
 import fs from 'fs'
 import fsPromises from 'fs/promises'
 import { extname, join } from 'path'
-import config from './config.js'
+import config from '../utils/config.js'
 
 const { dir: { publicDirectory } } = config
 

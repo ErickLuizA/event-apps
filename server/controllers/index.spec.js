@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals'
-import { Controller } from '../../../server/controller.js'
+import { Controller } from './index.js'
 
 describe('#Controller', () => {
   test('it should call getFileStream with given filename', async () => {

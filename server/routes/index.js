@@ -1,6 +1,6 @@
-import config from './config.js'
-import { Controller } from './controller.js'
-import { logger } from './utils.js'
+import { Controller } from '../controllers/index.js'
+import config from '../utils/config.js'
+import { logger } from '../utils/logger.js'
 
 const { location, pages, constants: { CONTENT_TYPE } } = config
 
