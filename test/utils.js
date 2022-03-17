@@ -1,7 +1,11 @@
 /* istanbul ignore file */
 import { jest } from '@jest/globals'
-import { Readable, Writable } from 'stream'
+import portfinder from 'portfinder'
+import { Readable, Transform, Writable } from 'stream'
+import supertest from 'supertest'
+import server from '../server/server.js'
 
+const getAvailablePort = portfinder.getPortPromise
 export default class TestUtil {
   static generateReadableStream(data) {
     return new Readable({
@@ -46,5 +50,41 @@ export default class TestUtil {
       values: () => Object.values(data),
       ...data,
     }
+  }
+
+  static pipeAndReadStreamData(stream, onChunk) {
+    const transform = new Transform({
+      transform(chunk, enc, cb) {
+        onChunk(chunk)
+
+        cb(null, chunk)
+      }
+    })
+
+    return stream.pipe(transform)
+  }
+
+  static async getTestServer() {
+    const getSuperTest = port => supertest(`http://localhost:${port}`)
+
+    const port = await getAvailablePort()
+
+    return new Promise((resolve) => {
+
+      const createdServer = server
+        .listen(port)
+        .once('listening', () => {
+          const testServer = getSuperTest(port)
+
+          const response = {
+            testServer,
+            kill() {
+              createdServer.close()
+            }
+          }
+
+          return resolve(response)
+        })
+    })
   }
 }

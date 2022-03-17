@@ -14,7 +14,8 @@ export class Controller {
     logger.info(`Command received: ${command}`)
 
     const result = {
-      result: 'ok'
+      result: 'ok',
+      command: command
     }
 
     const cmd = command.toLowerCase()
@@ -31,16 +32,17 @@ export class Controller {
       return result
     }
 
-    return this.service.startStreamming()
+    throw Error('Unsupported command')
   }
 
   createClientStream() {
     const { id, clientStream } = this.service.createClientStream()
 
-    logger.info(`Created connection of ${id}`)
+    logger.info(`${id} has connected`)
 
     const onClose = () => {
-      logger.info(`Closing connection of ${id}`)
+      logger.info(`${id} has been disconnected`)
+
       this.service.removeClientStream(id)
     }
 

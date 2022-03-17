@@ -11,6 +11,7 @@ const defaultConfig = {
     }
   },
   maxWorkers: '50%',
+  transform: {},
   watchPathIgnorePatterns: ['node_modules'],
   transformIgnorePatterns: ['node_modules']
 }
