@@ -1,4 +1,4 @@
-import { describe, expect, jest, test } from '@jest/globals'
+import { beforeEach, describe, expect, jest, test } from '@jest/globals'
 import TestUtil from '../../test/utils.js'
 import { Controller } from '../controllers/index.js'
 import config from '../utils/config.js'
@@ -92,7 +92,7 @@ describe('#Routes', () => {
 
     await handler(...params.values())
 
-    expect(Controller.prototype.getFileStream).toBeCalledWith(fileName)
+    expect(Controller.prototype.getFileStream).toHaveBeenCalledWith(fileName)
     expect(mockFileStream.pipe).toHaveBeenCalledWith(params.response)
     expect(params.response.writeHead).toHaveBeenCalledWith(200, {
       'Content-Type': CONTENT_TYPE[expectedType],

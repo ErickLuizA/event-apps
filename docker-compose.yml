@@ -1,0 +1,55 @@
+version: '2.1'
+
+services:
+  app:
+    image: spotify-radio
+    build: .
+    environment:
+      - PORT:3000
+    command:
+      - yarn
+      - dev
+    volumes:
+      - .:/spotify-radio
+      - node_modules:/spotify-radio/node_modules
+    ports:
+      - 3000:3000
+
+  test:
+    image: spotify-radio
+    build: .
+    environment:
+      - PORT:3000
+    command:
+      - yarn
+      - test
+    volumes:
+      - .:/spotify-radio
+      - node_modules:/spotify-radio/node_modules
+
+  test-watch:
+    image: spotify-radio
+    build: .
+    environment:
+      - PORT:3000
+    command:
+      - yarn
+      - test:watch
+    volumes:
+      - .:/spotify-radio
+      - node_modules:/spotify-radio/node_modules
+
+  test-coverage:
+    image: spotify-radio
+    build: .
+    environment:
+      - PORT:3000
+    command:
+      - yarn
+      - test:coverage
+    volumes:
+      - .:/spotify-radio
+      - node_modules:/spotify-radio/node_modules
+
+volumes:
+  node_modules: {}
