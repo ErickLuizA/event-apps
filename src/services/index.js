@@ -3,13 +3,17 @@ import fs from 'fs'
 import fsPromises from 'fs/promises'
 import { extname, join } from 'path'
 import { PassThrough, Writable } from 'stream'
+import { once } from 'events'
 import streamsPromises from 'stream/promises'
 import Throttle from 'throttle'
-import config from '../utils/config.js'
-import { getBitRate } from '../utils/getBitRate.js'
+import config from '../../src/utils/config.js'
 import { logger } from '../utils/logger.js'
+import childProcess from 'child_process'
 
-const { dir: { publicDirectory }, constants: { englishConversation, bitRateDivisor } } = config
+const {
+  dir: { publicDirectory },
+  constants: { englishConversation, bitRateDivisor, fallbackBiteRate }
+} = config
 
 export class Service {
   constructor() {
@@ -23,11 +27,14 @@ export class Service {
   async startStreamming() {
     logger.info(`Streaming ${this.currentSong}`)
 
-    const bitRate = this.currentBitRate = (await getBitRate(this.currentSong)) / bitRateDivisor
+    const bitRate = (this.currentBitRate =
+      (await this.getBitRate(this.currentSong)) / bitRateDivisor)
 
-    const throttleTransform = this.throttleTransform = new Throttle(bitRate)
+    const throttleTransform = (this.throttleTransform = new Throttle(bitRate))
 
-    const songReadable = this.currentReadable = this.createFileStream(this.currentSong)
+    const songReadable = (this.currentReadable = this.createFileStream(
+      this.currentSong
+    ))
 
     return streamsPromises.pipeline(
       songReadable,
@@ -75,6 +82,30 @@ export class Service {
         cb()
       }
     })
+  }
+
+  async getBitRate(song) {
+    try {
+      const args = ['--i', '-B', song]
+
+      const { stdout, stderr } = this._executeSoxCommand(args)
+
+      await Promise.all([once(stdout, 'readable'), once(stderr, 'readable')])
+
+      const [success, error] = [stdout, stderr].map((stream) => stream.read())
+
+      if (error) return await Promise.reject(error)
+
+      return success.toString().trim().replace(/k/, '000')
+    } catch (error) {
+      logger.error(`Error at bitrate: ${error}`)
+
+      return fallbackBiteRate
+    }
+  }
+
+  _executeSoxCommand(args) {
+    return childProcess.spawn('sox', args)
   }
 
   createFileStream(filename) {

@@ -3,7 +3,7 @@ import { jest } from '@jest/globals'
 import portfinder from 'portfinder'
 import { Readable, Transform, Writable } from 'stream'
 import supertest from 'supertest'
-import server from '../server/server.js'
+import server from '../src/server.js'
 
 const getAvailablePort = portfinder.getPortPromise
 export default class TestUtil {
@@ -15,7 +15,7 @@ export default class TestUtil {
         }
 
         this.push(null)
-      },
+      }
     })
   }
 
@@ -25,30 +25,30 @@ export default class TestUtil {
         onData(chunk)
 
         cb(null, chunk)
-      },
+      }
     })
   }
 
   static defaultHandleParams() {
     const requestStream = TestUtil.generateReadableStream([''])
 
-    const response = TestUtil.generateWritableStream(() => { })
+    const response = TestUtil.generateWritableStream(() => {})
 
     const data = {
       request: Object.assign(requestStream, {
         headers: {},
         method: '',
-        url: '',
+        url: ''
       }),
       response: Object.assign(response, {
         writeHead: jest.fn(),
-        end: jest.fn(),
-      }),
+        end: jest.fn()
+      })
     }
 
     return {
       values: () => Object.values(data),
-      ...data,
+      ...data
     }
   }
 
@@ -65,13 +65,12 @@ export default class TestUtil {
   }
 
   static async getTestServer() {
-    const getSuperTest = port => supertest(`http://localhost:${port}`)
+    const getSuperTest = (port) => supertest(`http://localhost:${port}`)
 
     const port = await getAvailablePort()
 
     return new Promise((resolve) => {
-
-      const createdServer = server
+      const createdServer = server()
         .listen(port)
         .once('listening', () => {
           const testServer = getSuperTest(port)
@@ -86,5 +85,13 @@ export default class TestUtil {
           return resolve(response)
         })
     })
+  }
+
+  static getSpawnResponse({ stdout = '', stderr = '', stdin = () => {} }) {
+    return {
+      stdout: TestUtil.generateReadableStream([stdout]),
+      stderr: TestUtil.generateReadableStream([stderr]),
+      stdin: TestUtil.generateWritableStream(stdin)
+    }
   }
 }

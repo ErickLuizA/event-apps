@@ -3,7 +3,11 @@ import { Controller } from '../controllers/index.js'
 import config from '../utils/config.js'
 import { logger } from '../utils/logger.js'
 
-const { location, pages, constants: { CONTENT_TYPE } } = config
+const {
+  location,
+  pages,
+  constants: { CONTENT_TYPE }
+} = config
 
 const controller = new Controller()
 
@@ -12,7 +16,7 @@ async function routes(request, response) {
 
   if (method === 'GET' && url === '/') {
     response.writeHead(302, {
-      'Location': location.home
+      Location: location.home
     })
 
     return response.end()
@@ -21,15 +25,13 @@ async function routes(request, response) {
   if (method === 'GET' && url === '/home') {
     const { stream } = await controller.getFileStream(pages.homeHTML)
 
-    return stream
-      .pipe(response)
+    return stream.pipe(response)
   }
 
   if (method === 'GET' && url === '/controller') {
     const { stream } = await controller.getFileStream(pages.controllerHTML)
 
-    return stream
-      .pipe(response)
+    return stream.pipe(response)
   }
 
   if (method === 'GET' && url.includes('/stream')) {
@@ -91,6 +93,7 @@ function handleError(error, response) {
 }
 
 export function handler(request, response) {
-  return routes(request, response)
-    .catch(error => handleError(error, response))
+  return routes(request, response).catch((error) =>
+    handleError(error, response)
+  )
 }

@@ -4,7 +4,11 @@ import { Controller } from '../controllers/index.js'
 import config from '../utils/config.js'
 import { handler } from './index.js'
 
-const { pages, location, constants: { CONTENT_TYPE } } = config
+const {
+  pages,
+  location,
+  constants: { CONTENT_TYPE }
+} = config
 
 describe('#Routes', () => {
   beforeEach(() => {
@@ -21,7 +25,7 @@ describe('#Routes', () => {
     await handler(...params.values())
 
     expect(params.response.writeHead).toBeCalledWith(302, {
-      Location: location.home,
+      Location: location.home
     })
     expect(params.response.end).toHaveBeenCalled()
   })
@@ -37,7 +41,7 @@ describe('#Routes', () => {
     jest
       .spyOn(Controller.prototype, Controller.prototype.getFileStream.name)
       .mockResolvedValue({
-        stream: mockFileStream,
+        stream: mockFileStream
       })
 
     jest.spyOn(mockFileStream, 'pipe').mockReturnValue()
@@ -59,14 +63,67 @@ describe('#Routes', () => {
     jest
       .spyOn(Controller.prototype, Controller.prototype.getFileStream.name)
       .mockResolvedValue({
-        stream: mockFileStream,
+        stream: mockFileStream
       })
 
     jest.spyOn(mockFileStream, 'pipe').mockReturnValue()
 
     await handler(...params.values())
 
-    expect(Controller.prototype.getFileStream).toBeCalledWith(pages.controllerHTML)
+    expect(Controller.prototype.getFileStream).toBeCalledWith(
+      pages.controllerHTML
+    )
+    expect(mockFileStream.pipe).toHaveBeenCalledWith(params.response)
+  })
+
+  test.each([{ command: 'start' }, { command: 'stop' }])(
+    'POST /controller - should call handleCommand and return result',
+    async ({ command }) => {
+      const params = TestUtil.defaultHandleParams()
+
+      params.request.method = 'POST'
+      params.request.push(JSON.stringify({ command }))
+      params.request.url = '/controller'
+
+      const handleCommand = jest
+        .spyOn(Controller.prototype, Controller.prototype.handleCommand.name)
+        .mockResolvedValue({
+          result: 'ok',
+          command
+        })
+
+      await handler(...params.values())
+
+      expect(handleCommand).toBeCalledWith({ command })
+    }
+  )
+
+  test(`GET /stream - should respond with file stream`, async () => {
+    const params = TestUtil.defaultHandleParams()
+
+    params.request.method = 'GET'
+    params.request.url = '/stream?id=121'
+
+    const onClose = jest.fn()
+
+    const mockFileStream = TestUtil.generateReadableStream(['data'])
+
+    const createClientStream = jest
+      .spyOn(Controller.prototype, Controller.prototype.createClientStream.name)
+      .mockReturnValueOnce({
+        stream: mockFileStream,
+        onClose
+      })
+
+    jest.spyOn(mockFileStream, 'pipe').mockReturnValue()
+
+    await handler(...params.values())
+
+    expect(createClientStream).toHaveBeenCalled()
+    expect(params.response.writeHead).toHaveBeenCalledWith(200, {
+      'Content-Type': 'audio/mpeg',
+      'Accept-Ranges': 'bytes'
+    })
     expect(mockFileStream.pipe).toHaveBeenCalledWith(params.response)
   })
 
@@ -85,7 +142,7 @@ describe('#Routes', () => {
       .spyOn(Controller.prototype, Controller.prototype.getFileStream.name)
       .mockResolvedValue({
         stream: mockFileStream,
-        type: expectedType,
+        type: expectedType
       })
 
     jest.spyOn(mockFileStream, 'pipe').mockReturnValue()
@@ -95,7 +152,7 @@ describe('#Routes', () => {
     expect(Controller.prototype.getFileStream).toHaveBeenCalledWith(fileName)
     expect(mockFileStream.pipe).toHaveBeenCalledWith(params.response)
     expect(params.response.writeHead).toHaveBeenCalledWith(200, {
-      'Content-Type': CONTENT_TYPE[expectedType],
+      'Content-Type': CONTENT_TYPE[expectedType]
     })
   })
 
@@ -114,7 +171,7 @@ describe('#Routes', () => {
       .spyOn(Controller.prototype, Controller.prototype.getFileStream.name)
       .mockResolvedValue({
         stream: mockFileStream,
-        type: expectedType,
+        type: expectedType
       })
 
     jest.spyOn(mockFileStream, 'pipe').mockReturnValue()
@@ -147,7 +204,9 @@ describe('#Routes', () => {
 
       jest
         .spyOn(Controller.prototype, Controller.prototype.getFileStream.name)
-        .mockRejectedValue(new Error('Error: ENOENT: no such file or directory'))
+        .mockRejectedValue(
+          new Error('Error: ENOENT: no such file or directory')
+        )
 
       await handler(...params.values())
 

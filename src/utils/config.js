@@ -1,13 +1,11 @@
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
-const currentDir = dirname(
-  fileURLToPath(import.meta.url)
-)
+const currentDir = dirname(fileURLToPath(import.meta.url))
 
 const root = join(currentDir, '../../')
 
-const audioDirectory = join(root, 'audio')
+const audioDirectory = join(root, 'src', 'assets', 'audio')
 const publicDirectory = join(root, 'public')
 
 const songsDirectory = join(audioDirectory, 'songs')
