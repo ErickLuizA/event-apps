@@ -7,3 +7,10 @@ server()
   .on('listening', () => {
     logger.info(`Server is running at http://localhost:${config.port} 🚀🚀🚀🚀`)
   })
+
+process.on('uncaughtException', (error) =>
+  logger.error(`uncaughtException happend: ${error.stack || error}`)
+)
+process.on('unhandledRejection', (error) =>
+  logger.error(`unhandledRejection happend: ${error.stack || error}`)
+)

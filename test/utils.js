@@ -94,4 +94,17 @@ export default class TestUtil {
       stdin: TestUtil.generateWritableStream(stdin)
     }
   }
+
+  static makeButtonEelement(
+    { text, classList } = {
+      text: '',
+      classList: { add: jest.fn(), remove: jest.fn() }
+    }
+  ) {
+    return {
+      onclick: jest.fn(),
+      classList,
+      innerText: text
+    }
+  }
 }

@@ -32,7 +32,13 @@ export class Controller {
       return result
     }
 
-    throw Error('Unsupported command')
+    const chosenFx = await this.service.readFxByName(cmd)
+
+    this.service.appendFxStream(chosenFx)
+
+    logger.info(`${chosenFx} was added`)
+
+    return result
   }
 
   createClientStream() {
