@@ -39,7 +39,7 @@ Marque esse projeto com uma estrela 🌟
   - [ ] disponibilizar um novo efeito
     - [ ] adicionar um botão novo no controlador
     - [ ] adicionar um som de efeito novo para a pasta `audios/fx/`
-    - [ ] republicar no heroku
+    - [x] republicar no heroku
 
 ### Considerações
 
