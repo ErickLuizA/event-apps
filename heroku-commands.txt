@@ -1,0 +1,9 @@
+heroku login
+
+heroku apps:create spotify-radio
+
+heroku stack:set container
+
+heroku logs -t -a spotify-radio
+
+heroku apps:delete or heroku apps:delete --confirm spotify-radio-er
