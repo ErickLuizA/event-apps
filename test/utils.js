@@ -22,7 +22,7 @@ export default class TestUtil {
   static generateWritableStream(onData) {
     return new Writable({
       write(chunk, enc, cb) {
-        onData(chunk)
+        onData?.(chunk)
 
         cb(null, chunk)
       }
@@ -32,7 +32,7 @@ export default class TestUtil {
   static defaultHandleParams() {
     const requestStream = TestUtil.generateReadableStream([''])
 
-    const response = TestUtil.generateWritableStream(() => {})
+    const response = TestUtil.generateWritableStream()
 
     const data = {
       request: Object.assign(requestStream, {
@@ -95,10 +95,10 @@ export default class TestUtil {
     }
   }
 
-  static makeButtonEelement(
+  static makeButtonElement(
     { text, classList } = {
       text: '',
-      classList: { add: jest.fn(), remove: jest.fn() }
+      classList: { add: jest.fn(), remove: jest.fn(), toggle: jest.fn() }
     }
   ) {
     return {
@@ -106,5 +106,17 @@ export default class TestUtil {
       classList,
       innerText: text
     }
+  }
+
+  static makeClassListElement(
+    { classes } = {
+      classes: []
+    }
+  ) {
+    const classList = new Set(classes)
+    classList.contains = classList.has
+    classList.remove = classList.delete
+
+    return classList
   }
 }

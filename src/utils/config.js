@@ -38,6 +38,15 @@ export default {
     fxVolume: '0.1',
     fallbackBiteRate: '128000',
     bitRateDivisor: 8,
-    englishConversation: join(songsDirectory, 'conversation.mp3')
+    englishConversation: join(songsDirectory, 'conversation.mp3'),
+    commands: [
+      'start',
+      'stop',
+      'applause',
+      'audience applause',
+      'boo!',
+      'fart',
+      'laughing'
+    ]
   }
 }

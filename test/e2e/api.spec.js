@@ -11,6 +11,11 @@ const RETENTION_DATA_PERIOD = 200
 
 describe('API e2e', () => {
   const possibleCommands = {
+    applause: 'applause',
+    audience: 'audience',
+    boo: 'boo',
+    fart: 'fart',
+    laugh: 'laugh',
     start: 'start',
     stop: 'stop'
   }
@@ -106,6 +111,22 @@ describe('API e2e', () => {
 
       expect(buffer).toBeInstanceOf(Buffer)
       expect(buffer.length).toBeGreaterThan(1000)
+
+      server.kill()
+    })
+
+    test('it shouldnt break sending commands to the API if theres no audio playing', async () => {
+      const server = await TestUtil.getTestServer()
+
+      const sender = commandSender(server.testServer)
+
+      await setTimeout(RETENTION_DATA_PERIOD)
+
+      await sender.send(possibleCommands.stop)
+      await sender.send(possibleCommands.applause)
+      await sender.send(possibleCommands.stop)
+
+      await setTimeout(RETENTION_DATA_PERIOD)
 
       server.kill()
     })

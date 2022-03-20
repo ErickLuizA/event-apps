@@ -1,5 +1,10 @@
 import { Service } from '../services/index.js'
+import config from '../utils/config.js'
 import { logger } from '../utils/logger.js'
+
+const {
+  constants: { commands }
+} = config
 
 export class Controller {
   constructor() {
@@ -31,6 +36,9 @@ export class Controller {
 
       return result
     }
+
+    if (!commands.some((command) => command.includes(cmd)))
+      throw new Error('Unsupported command')
 
     const chosenFx = await this.service.readFxByName(cmd)
 

@@ -1,9 +1,10 @@
 import { describe, expect, jest, test } from '@jest/globals'
 import { Controller } from './index.js'
 import TestUtil from '../../test/utils.js'
+import { Service } from '../services/index.js'
 
 describe('#Controller', () => {
-  test('it should call getFileStream with given filename', async () => {
+  test('#getFileStream - it should call getFileStream with given filename', async () => {
     const controller = new Controller()
 
     const fileName = 'fileName.txt'
@@ -19,7 +20,7 @@ describe('#Controller', () => {
     expect(result).toStrictEqual(response)
   })
 
-  test('it should return stream and onClose', async () => {
+  test('#createClientStream - it should return stream and onClose', async () => {
     const controller = new Controller()
 
     const clientStream = TestUtil.generateReadableStream('data')
@@ -37,7 +38,7 @@ describe('#Controller', () => {
     })
   })
 
-  test('it should call removeClientStream when call onClose', async () => {
+  test('#createClientStream - it should call removeClientStream when call onClose', async () => {
     const controller = new Controller()
 
     const clientStream = TestUtil.generateReadableStream('data')
@@ -87,6 +88,32 @@ describe('#Controller', () => {
       expect(() =>
         controller.handleCommand({ command: 'end_of_all_things' })
       ).rejects.toThrowError('Unsupported command')
+    })
+
+    test('it should call readFxByName and appendFxStream when called with fx command', async () => {
+      const controller = new Controller()
+
+      const fxName = 'applause'
+
+      jest
+        .spyOn(Service.prototype, Service.prototype.readFxByName.name)
+        .mockResolvedValue(fxName)
+
+      jest
+        .spyOn(Service.prototype, Service.prototype.appendFxStream.name)
+        .mockReturnValue()
+
+      const result = await controller.handleCommand({ command: fxName })
+
+      expect(result).toStrictEqual({
+        result: 'ok',
+        command: fxName
+      })
+
+      expect(Service.prototype.readFxByName).toHaveBeenCalledWith(
+        fxName.toLowerCase()
+      )
+      expect(Service.prototype.appendFxStream).toHaveBeenCalledWith(fxName)
     })
   })
 })
