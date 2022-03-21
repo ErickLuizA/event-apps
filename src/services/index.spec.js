@@ -7,7 +7,7 @@ import TestUtil from '../../test/utils.js'
 import config from '../utils/config.js'
 import { Service } from './index.js'
 import Throttle from 'throttle'
-import { PassThrough, Writable } from 'stream'
+import { PassThrough, Readable, Writable } from 'stream'
 import childProcess from 'child_process'
 
 const {
@@ -268,7 +268,7 @@ describe('#Service', () => {
     expect(fsPromises.readdir).toHaveBeenCalledWith(fxDirectory)
   })
 
-  test.skip('#appendFxStream', async () => {
+  test('#appendFxStream', async () => {
     const service = new Service()
 
     const currentFx = 'fx.mp3'
@@ -277,25 +277,28 @@ describe('#Service', () => {
     service.currentReadable = TestUtil.generateReadableStream(['abc'])
 
     const mergedthrottleTransformMock = new PassThrough()
-    const expectedFirstCallResult = 'ok1'
-    const expectedSecondCallResult = 'ok2'
+    const expectedFirstCallResult = jest.fn()
+    const expectedSecondCallResult = jest.fn()
     const writableBroadcaster = TestUtil.generateWritableStream(() => {})
 
-    jest
+    const pipelineSpy = jest
       .spyOn(streamPromises, 'pipeline')
-      .mockResolvedValueOnce(expectedFirstCallResult)
-      .mockResolvedValueOnce(expectedSecondCallResult)
+      .mockImplementationOnce(async () => {
+        expectedFirstCallResult()
+      })
+      .mockImplementationOnce(async () => {
+        expectedSecondCallResult()
+      })
 
     jest
       .spyOn(service, service.broadcast.name)
       .mockReturnValue(writableBroadcaster)
 
     jest
-      .spyOn(service, service.mergeAudioStreams.name)
+      .spyOn(service, 'mergeAudioStreams')
       .mockReturnValue(mergedthrottleTransformMock)
 
-    jest.spyOn(mergedthrottleTransformMock, 'removeListener').mockReturnValue()
-
+    jest.spyOn(mergedthrottleTransformMock, 'removeListener')
     jest.spyOn(service.throttleTransform, 'pause')
 
     jest.spyOn(service.currentReadable, 'unpipe').mockImplementation()
@@ -309,59 +312,39 @@ describe('#Service', () => {
 
     service.throttleTransform.emit('unpipe')
 
-    const [call1, call2] = streamPromises.pipeline.mock.calls
-    const [resultCall1, resultCall2] = streamPromises.pipeline.mock.results
+    const [call1, call2] = pipelineSpy.mock.calls
+    const [resultCall1, resultCall2] = pipelineSpy.mock.results
 
     const [throttleTransformCall1, broadcastCall1] = call1
+    expect(throttleTransformCall1).toBeInstanceOf(Readable)
+    expect(broadcastCall1).toBeInstanceOf(Throttle)
 
-    expect(throttleTransformCall1).toBeInstanceOf(Throttle)
-    expect(broadcastCall1).toStrictEqual(writableBroadcaster)
+    await Promise.all([resultCall1.value, resultCall2.value])
 
-    const [result1, result2] = await Promise.all([
-      resultCall1.value,
-      resultCall2.value
-    ])
-
-    expect(result1).toStrictEqual(expectedFirstCallResult)
-    expect(result2).toStrictEqual(expectedSecondCallResult)
+    expect(expectedFirstCallResult).toHaveBeenCalled()
+    expect(expectedSecondCallResult).toHaveBeenCalled()
 
     const [mergedStreamCall2, throttleTransformCall2] = call2
-
-    expect(mergedStreamCall2).toStrictEqual(mergedthrottleTransformMock)
-    expect(throttleTransformCall2).toBeInstanceOf(Throttle)
+    expect(mergedStreamCall2).toBeInstanceOf(Throttle)
+    expect(throttleTransformCall2).toBeInstanceOf(Writable)
     expect(service.currentReadable.removeListener).toHaveBeenCalled()
   })
 
-  test.skip('#mergeAudioStreams', async () => {
+  test('#mergeAudioStreams', async () => {
     const service = new Service()
 
-    const currentFx = 'fx.mp3'
-    const currentReadable = TestUtil.generateReadableStream(['abc'])
+    const song = 'customfx.mp3'
 
-    const spawnResponse = TestUtil.getSpawnResponse({
-      stdout: '1k',
-      stdin: 'myFx'
+    const readable = TestUtil.generateReadableStream(['fx'])
+
+    jest.spyOn(service, service._executeSoxCommand.name).mockReturnValue({
+      stdin: TestUtil.generateWritableStream('fx'),
+      stdout: TestUtil.generateReadableStream(['128k']),
+      stderr: TestUtil.generateReadableStream([''])
     })
-
-    jest
-      .spyOn(service, service._executeSoxCommand.name)
-      .mockReturnValue(spawnResponse)
-
     jest.spyOn(streamPromises, 'pipeline').mockResolvedValue()
 
-    const result = service.mergeAudioStreams(currentFx, currentReadable)
-
-    const [call1, call2] = streamPromises.pipeline.mock.calls
-
-    const [readableCall, stdinCall] = call1
-
-    expect(readableCall).toStrictEqual(currentReadable)
-    expect(stdinCall).toStrictEqual(spawnResponse.stdin)
-
-    const [stdoutCall, transformStream] = call2
-
-    expect(stdoutCall).toStrictEqual(spawnResponse.stdout)
-    expect(transformStream).toBeInstanceOf(PassThrough)
+    const result = service.mergeAudioStreams(song, readable)
 
     expect(result).toBeInstanceOf(PassThrough)
   })
