@@ -46,7 +46,9 @@ export default {
       'audience applause',
       'boo!',
       'fart',
-      'laughing'
+      'laughing',
+      'scream',
+      'siren'
     ]
   }
 }

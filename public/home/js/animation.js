@@ -61,3 +61,7 @@ function initProgressBar() {
 
 $(ui.play).addEventListener('click', togglePlay)
 $(ui.audio).addEventListener('timeupdate', initProgressBar)
+
+media.addEventListener('playing', () => {
+  $(ui.play).classList.add('pause')
+})
